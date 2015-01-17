@@ -1,0 +1,21 @@
+{
+  "name": "better-dependency-injector",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "This is a simple but very esay to use dependency injector. It should speed up development speed dramatically",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mrlove <truemrlove2233@gmail.com>",
+  "license": "free to use",
+  "dependencies": {
+    "annotation": "^0.1.0",
+    "async": "^0.9.0",
+    "glob": "^4.3.5",
+    "underscore": "^1.7.0"
+  },
+  "directories": {
+    "example": "example"
+  },
+  "devDependencies": {}
+}
