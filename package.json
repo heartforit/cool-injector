@@ -1,6 +1,6 @@
 {
   "name": "better-dependency-injector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "description": "This is a simple but very esay to use dependency injector. It should speed up development speed dramatically",
   "scripts": {
@@ -17,5 +17,26 @@
   "directories": {
     "example": "example"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrlove/cool-injector.git"
+  },
+  "keywords": [
+    "dependency",
+    "injection",
+    "ioc",
+    "IoC",
+    "dependency-injector",
+    "inject",
+    "graph",
+    "desgin",
+    "pattern",
+    "beans",
+    "spring"
+  ],
+  "bugs": {
+    "url": "https://github.com/mrlove/cool-injector/issues"
+  },
+  "homepage": "https://github.com/mrlove/cool-injector"
 }
