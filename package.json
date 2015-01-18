@@ -1,6 +1,6 @@
 {
   "name": "better-dependency-injector",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "index.js",
   "description": "This is a simple but very esay to use dependency injector. It should speed up development speed dramatically",
   "scripts": {
