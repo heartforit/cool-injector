@@ -28,7 +28,7 @@ function readFile(file, callback){
 		   	class: oneClass,
 		   	constructorArgs: getParamNames(oneClass),
 		   	annotations: annotations,
-		   	lazy: true,
+		   	lazy: false,
 		   	forceOverwrite: false
 		   };
 
@@ -108,8 +108,8 @@ function resolveContainer(functionObj){
 
 					// check if classes references each to other
 					// which means we have recursion again
-					if(classItem.constructorArgs.indexOf(functionObj.className) !== -1
-						&& functionObj.constructorArgs.indexOf(classItem.className) !== -1
+					if(classItem.constructorArgs && classItem.constructorArgs.indexOf(functionObj.className) !== -1
+						&& functionObj.constructorArgs && functionObj.constructorArgs.indexOf(classItem.className) !== -1
 						){
 						throw new Error("please to not refrence two classes to each other. "
 							+ "("+classItem.className +" --><-- "+ functionObj.className +")");

@@ -1,4 +1,4 @@
 var CoolInjector = require("../");
-var coolInjector = new CoolInjector(['./lib/**', './helper/**'], function(err, objects){
+var coolInjector = new CoolInjector(['./lib/**.js', './helper/**.js'], function(err, objects){
 	console.log(coolInjector, objects);
 });
