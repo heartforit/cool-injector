@@ -5,14 +5,12 @@ var path = require('path');
 var _ = require("underscore")
 var annotation = require('annotation');
 
-
-
 var classTree = {};
 var container = {};
 
 function readFile(file, callback){
-
 	file = path.resolve(file)
+
 	try {
 	   var oneClass = require(file);
 
@@ -21,8 +19,8 @@ function readFile(file, callback){
        } 
 
        annotation(file, function(AnnotationReader) {
-		   //get annotations related to the class
-		   var annotations = AnnotationReader.getClassAnnotations()
+		   // get annotations related to the class
+		   var annotations = AnnotationReader.getClassAnnotations();
 		   
 	       var obj = {
 		   	className: path.basename(file, '.js'), 
@@ -33,11 +31,6 @@ function readFile(file, callback){
 		   	lazy: true,
 		   	forceOverwrite: false
 		   };
-
-		   if(obj.constructorArgs && obj.constructorArgs.indexOf(obj.className) !== -1){
-		   		throw new Error("a class should no refrence itself ("+obj.className+")");
-		   }
-
 
 		   if(obj.annotations){
 		   		// search for alias
@@ -68,6 +61,13 @@ function readFile(file, callback){
 		   				break;
 		   			}
 		   		}
+		   }
+
+		   // check if self references are made
+		   // if yes, then we are runnning into recursion 
+		   // which leads to an range error
+		   if(obj.constructorArgs && obj.constructorArgs.indexOf(obj.className) !== -1){
+		   		throw new Error("a class should no refrence itself ("+obj.className+") File: "+ obj.file);
 		   }
 
 		   if(!classTree[obj.className] || obj.forceOverwrite === true) {		   
@@ -103,9 +103,14 @@ function resolveContainer(functionObj){
 				// check if class from domain
 				// should be loaded
 				if(classTree[item]){
-					// check if classes references each to other
+					
 					var classItem = classTree[item];
-					if(classItem.constructorArgs && classItem.constructorArgs.indexOf(item)){
+
+					// check if classes references each to other
+					// which means we have recursion again
+					if(classItem.constructorArgs.indexOf(functionObj.className) !== -1
+						&& functionObj.constructorArgs.indexOf(classItem.className) !== -1
+						){
 						throw new Error("please to not refrence two classes to each other. "
 							+ "("+classItem.className +" --><-- "+ functionObj.className +")");
 					}
@@ -145,39 +150,48 @@ function resolveContainer(functionObj){
 
 }
 
+function applyConstruct(ctor, params) {
+
+    var obj, newobj;
+
+    // Use a fake constructor function with the target constructor's
+    // `prototype` property to create the object with the right prototype
+    function fakeCtor() {
+    }
+    fakeCtor.prototype = ctor.prototype;
+    obj = new fakeCtor();
+
+    // Set the object's `constructor`
+    obj.constructor = ctor;
+
+    // Call the constructor function
+    newobj = ctor.apply(obj, params);
+
+    // Use the returned object if there is one.
+    // Note that we handle the funky edge case of the `Function` constructor,
+
+    if (newobj !== null
+        && (typeof newobj === "object" || typeof newobj === "function")
+       ) {
+        obj = newobj;
+    }
+
+    // Done
+    return obj;
+}
+
 function makeInstance(funcName, args){
 
 	var filtered = [];
+	var counter = 0;
 	args.forEach(function(item){
-		if(typeof item === "object"){
-			filtered.push(item);
-		} 
-		// injecting a pure function needs a object wrapper
-		else if(typeof item === "function"){
-			filtered.push({class:item});
+		if(typeof item === "object" || typeof item === "function"){
+			filtered[counter] = item;
 		}
+		counter++;
 	})
-	args = filtered;
 
-	var args2 = "";
-	for(var i = 0 ; i < filtered.length; i++){
-
-			if(filtered[i].class){
-				args2 += "filtered[" + i + "]";
-			} else {
-				args2 += "filtered[" + i + "]";
-			}
-
-			
-			if(i+1 < filtered.length ){
-				args2 += ","
-			}
-	}
-
-	var factory = "obj = new funcName("+ args2 + ")";
-	eval(factory);
-
-	return obj;
+	return applyConstruct(funcName, filtered);
 }
 
 function getParamNames(fn) {
@@ -186,7 +200,7 @@ function getParamNames(fn) {
 }
 
 function readDirector(path, cb){
-	glob(path + "/*.js", cb);
+	glob(path, cb);
 }
 
 
@@ -201,7 +215,7 @@ function CoolInjector(paths, callback){
 	var pathTree;
 	async.map(paths, readDirector, function(err1, results){
 	    pathTree = _.flatten(results);
-	    
+
 		async.map(pathTree, readFile, function(err2, classes){
 
 			var i = 0;
@@ -231,3 +245,4 @@ function CoolInjector(paths, callback){
 
 
 module.exports = CoolInjector;
+
