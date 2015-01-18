@@ -17,7 +17,7 @@ How to use?
 ===
 ```javascript
 var CoolInjector = require("better-dependency-injector");
-var coolInjector = new CoolInjector(['./lib/**', './helper/**'], function(err, objects){
+var coolInjector = new CoolInjector(['./lib/**/*.js', './helper/**/*.js'], function(err, objects){
     // if we have a class in the lib folder named lib/myClassName.js
     // an we add "module.exports = myfunction(fs){console.log(fs)}"
     // it creates an instnace of it
