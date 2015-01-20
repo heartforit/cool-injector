@@ -19,9 +19,9 @@ var CoolInjector = require("better-dependency-injector");
 var coolInjector = new CoolInjector(['./lib/**/*.js', './helper/**/*.js'], function(err, objects){
     // if we have a class in the lib folder named lib/myClassName.js
     // an we add "module.exports = myfunction(fs){console.log(fs)}"
-    // it creates an instnace of it
+    // it creates an instance of it
     // and auto resolves all depndencies
-    // coolInjector can know access classes and instances of them     
+    // coolInjector can now access classes and instances of them     
     // by using coolInjector.get("myClassName");
     // objects is the current container
 	console.log(coolInjector, objects);
