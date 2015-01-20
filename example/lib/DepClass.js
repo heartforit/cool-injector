@@ -2,7 +2,7 @@
  * @Class();
  * @lazy(false);
  */
-module.exports = function(changedClassName){
+module.exports = function(changedClassName, testDash){
 	console.log("loaded myClass");
 	return {
 		sayHello1: function(){

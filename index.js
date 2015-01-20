@@ -8,40 +8,39 @@ var annotation = require('annotation');
 var classTree = {};
 var container = {};
 
+
+function toCamel(str) {
+	return str.replace(/[-_]([a-z])/g, function (g) { return g[1].toUpperCase(); })
+}
+
 function readFile(file, callback){
 	file = path.resolve(file)
 
 	try {
-	   var oneClass = require(file);
-
-	   if(typeof oneClass !== "function"){
-	    	throw new Error("please provide a valid class for file "+ file);
-       } 
-
        annotation(file, function(AnnotationReader) {
 		   // get annotations related to the class
 		   var annotations = AnnotationReader.getClassAnnotations();
 		   
 	       var obj = {
-		   	className: path.basename(file, '.js'), 
+		   	className: toCamel(path.basename(file, '.js')), 
 		   	file: file, 
-		   	class: oneClass,
-		   	constructorArgs: getParamNames(oneClass),
+		   	class: null,
+		   	constructorArgs: null,
 		   	annotations: annotations,
 		   	lazy: false,
-		   	forceOverwrite: false
+		   	forceOverwrite: false,
+		   	ignored: false
 		   };
 
 		   if(obj.annotations){
 		   		// search for alias
 		   		for(i = 0; obj.annotations.length > i; i++){
 		   			var result = obj.annotations[i];
-		   			
 		   			switch(result.key){
 		   				case "exportAs":
 		   					if(typeof result.value === "string" 
 		   						&& result.value !== ""){
-				   					obj.className = result.value;
+				   					obj.className = toCamel(result.value);
 				   				} else {
 				   					throw new Error("can not export as value ("+result.value+") for class "+ obj.className);
 				   				}
@@ -59,9 +58,23 @@ function readFile(file, callback){
 		   						obj.forceOverwrite = result.value;
 		   					}
 		   				break;
+
+		   				case "ignored":
+		   					if(typeof result.value === "boolean"
+		   						&& result.value === true){
+		   						return callback();
+		   					}
 		   			}
 		   		}
 		   }
+
+		   obj.class = require(file);
+
+		   if(typeof obj.class !== "function"){
+		    	throw new Error("please provide a valid class for file "+ file);
+	       }
+
+	       obj.constructorArgs = getParamNames(obj.class);
 
 		   // check if self references are made
 		   // if yes, then we are runnning into recursion 
@@ -90,6 +103,7 @@ function readFile(file, callback){
 * 
 */
 function resolveContainer(functionObj){
+	if(!functionObj) return;
 	var args = [];
 	var i = 0;
 	if(functionObj.constructorArgs != null && 
@@ -112,7 +126,7 @@ function resolveContainer(functionObj){
 						&& functionObj.constructorArgs && functionObj.constructorArgs.indexOf(classItem.className) !== -1
 						){
 						throw new Error("please to not refrence two classes to each other. "
-							+ "("+classItem.className +" --><-- "+ functionObj.className +")");
+							+ "("+classItem.file +" --><-- "+ functionObj.file +")");
 					}
 
 					var obj = resolveContainer(classTree[item]);
@@ -151,6 +165,9 @@ function resolveContainer(functionObj){
 }
 
 function applyConstruct(ctor, params) {
+	if(typeof ctor !== "function"){
+		throw new Error("invalid function was given "+ ctor);
+	}
 
     var obj, newobj;
 
@@ -158,25 +175,24 @@ function applyConstruct(ctor, params) {
     // `prototype` property to create the object with the right prototype
     function fakeCtor() {
     }
+
     fakeCtor.prototype = ctor.prototype;
     obj = new fakeCtor();
-
+    
     // Set the object's `constructor`
-    obj.constructor = ctor;
-
+    obj = ctor;
+    
     // Call the constructor function
     newobj = ctor.apply(obj, params);
 
     // Use the returned object if there is one.
     // Note that we handle the funky edge case of the `Function` constructor,
-
-    if (newobj !== null
+	if (newobj !== null
         && (typeof newobj === "object" || typeof newobj === "function")
        ) {
         obj = newobj;
     }
 
-    // Done
     return obj;
 }
 
