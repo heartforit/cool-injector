@@ -11,7 +11,6 @@ Limitations
 ====
 * The dependecy container does not allow refrences to classes which refrences itself.
 * Further it does not allow references to classes each to other
-* It does not know how to deal with file names like this-is-my-class.js for example
 
 How to use?
 ===
@@ -32,6 +31,8 @@ var coolInjector = new CoolInjector(['./lib/**/*.js', './helper/**/*.js'], funct
 Some more examples with annotations
 ==
 ```javascript
+// note, that annotation support needs `@Class();` in the
+// comment section
 /*
 * @Class();
 * @lazy(true); // lazy means just return function (not an instance of it)
@@ -42,7 +43,7 @@ module.exports = function(){
 }
 ```
 
-Solve duplicated file name / class name problems
+Solve duplicated file name problems
 ===
 Maybe we have class which has the same class name as an other class from our domain,
 we can try to use the `@exportAs` annotation or we can just try to use `@forceOverwrite` annotation
@@ -58,6 +59,31 @@ module.exports = function(){
 }
 ```
 
+Ignore files
+===
+```javascript
+/*
+* @Class();
+* @ignored(true); 
+*
+*/
+module.exports = function(){
+	// this class will be ignored
+}
+```
+
+
+Make use of singelton
+===
+```javascript
+module.exports = function(){
+	// this class will be loaded once
+	mySingeltonClass = functino(){
+	}
+
+	return new mySingeltonClass();
+}
+```
 
 
 
