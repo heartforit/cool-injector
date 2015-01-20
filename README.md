@@ -78,7 +78,7 @@ Make use of singelton
 ```javascript
 module.exports = function(){
 	// this class will be loaded once
-	mySingeltonClass = functino(){
+	mySingeltonClass = function(){
 	}
 
 	return new mySingeltonClass();
